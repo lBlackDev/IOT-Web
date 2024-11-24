@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IoT Backend Test</title>
+  <script>
+    let socket;
+
+    // Conectar al WebSocket
+    function connectWebSocket() {
+      socket = new WebSocket(`ws://${window.location.host}`);
+
+      socket.onopen = () => {
+        console.log('Conectado al servidor WebSocket');
+      };
+
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log('Datos recibidos del servidor:', data);
+
+        // Mostrar los datos en la página
+        document.getElementById('data').textContent = JSON.stringify(data, null, 2);
+      };
+
+      socket.onclose = () => {
+        console.log('Desconectado del servidor WebSocket');
+      };
+    }
+
+    window.onload = connectWebSocket;
+  </script>
+</head>
+<body>
+  <h1>Servidor IoT</h1>
+  <p>Conexión WebSocket activa. Observa la consola del navegador para los datos.</p>
+  <pre id="data">Esperando datos...</pre>
+</body>
+</html>
