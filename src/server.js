@@ -1,11 +1,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 const { WebSocketServer } = require('ws');
 const { addClient, removeClient } = require('./websocket');
-
-
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -19,7 +18,12 @@ const apiRoutes = require('../routes/api');
 app.use('/api', apiRoutes);
 
 // Servir archivos estáticos
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, '../public')));
+
+// Ruta para la raíz
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
 
 // Iniciar servidor HTTP
 const server = app.listen(port, () => {

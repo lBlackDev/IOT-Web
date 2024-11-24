@@ -10,7 +10,7 @@ router.post('/control', dataController.sendCommand);
 
 // Ruta para verificar el estado
 router.get('/status', (req, res) => {
-    res.json({ status: 'Servidor funcionando correctamente' }); // usando postman se verifico que esta correcto la ruta
+  res.json({ status: 'Servidor funcionando correctamente' }); // usando postman se verifico que esta correcto la ruta
 });
 
 module.exports = router;
