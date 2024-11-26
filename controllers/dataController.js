@@ -5,9 +5,12 @@ let latestData = {}; // Variable para almacenar los últimos datos recibidos
 // Manejar datos enviados por el dispositivo
 exports.receiveData = (req, res) => {
   const data = req.body; // Datos enviados por el dispositivo
-  console.log('Datos recibidos:', data);
-  latestData = data; // Guardar los datos
-  broadcastData(data); // Enviar los datos a los clientes conectados
+  if (!data.temperatura || !data.humedad) {
+    return res.status(400).json({ error: 'Datos incompletos' });
+  }
+  console.log('Datos recibidos del dispositivo:', data);
+  latestData = data;
+  broadcastData(data); // Retransmite datos vía WebSocket
   res.status(200).json({ message: 'Datos recibidos correctamente' });
 };
 
