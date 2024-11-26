@@ -1,4 +1,4 @@
-# Proyecto IoT: Página Web con Sensor DHT11 y Arduino
+# Proyecto IoT: Página Web con Sensor DHT11 y ESP8266
 
 Este proyecto integra el sensor DHT11 (para medir temperatura y humedad) con un Arduino que envía los datos a una página web en tiempo real.
 
