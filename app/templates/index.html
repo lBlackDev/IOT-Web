@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invernadero</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(to right, #56ab2f, #a8e063); /* Fondo degradado de verde a azul */
+            color: white; /* Texto blanco para contrastar con el fondo */
+        }
+        h1, h3, h4 {
+            color: #ffffff; /* Asegurar que los encabezados sean legibles */
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.8); /* Fondo blanco semitransparente para las tarjetas */
+            color: #000; /* Texto negro dentro de las tarjetas */
+            border-radius: 10px; /* Bordes redondeados */
+        }
+    </style>
+    <script>
+        $(document).ready(function() {
+            const tempData = [];
+            const humData = [];
+            const timeData = [];
+
+            const tempChartCtx = document.getElementById('tempChart').getContext('2d');
+            const humChartCtx = document.getElementById('humChart').getContext('2d');
+
+            const tempChart = new Chart(tempChartCtx, {
+                type: 'line',
+                data: {
+                    labels: timeData,
+                    datasets: [{
+                        label: 'Temperatura (°C)',
+                        data: tempData,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: { title: { display: true, text: 'Tiempo' } },
+                        y: { title: { display: true, text: 'Temperatura (°C)' } }
+                    }
+                }
+            });
+
+            const humChart = new Chart(humChartCtx, {
+                type: 'line',
+                data: {
+                    labels: timeData,
+                    datasets: [{
+                        label: 'Humedad (%)',
+                        data: humData,
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: { title: { display: true, text: 'Tiempo' } },
+                        y: { title: { display: true, text: 'Humedad (%)' } }
+                    }
+                }
+            });
+
+            function fetchData() {
+                $.get('/api/latest_data', function(data) {
+                    if (data.error) {
+                        $('#temperature').text('-');
+                        $('#humidity').text('-');
+                        $('#timestamp').text('-');
+                    } else {
+                        $('#temperature').text(data.temperature);
+                        $('#humidity').text(data.humidity);
+                        $('#timestamp').text(data.timestamp);
+
+                        // Update charts
+                        const now = new Date().toLocaleTimeString();
+                        tempData.push(data.temperature);
+                        humData.push(data.humidity);
+                        timeData.push(now);
+
+                        if (timeData.length > 10) {  // Keep last 10 data points
+                            tempData.shift();
+                            humData.shift();
+                            timeData.shift();
+                        }
+
+                        tempChart.update();
+                        humChart.update();
+                    }
+                });
+            }
+
+            fetchData(); // Fetch data initially
+            setInterval(fetchData, 3000); // Fetch data every 3 seconds
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center my-4 text-dark">Datos del Invernadero</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card p-3 mb-4">
+                    <h3 class="text-danger"">Temperatura: <span id="temperature">-</span> °C</h3>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card p-3 mb-4">
+                    <h3 class="text-primary">Humedad: <span id="humidity">-</span> %</h3>
+                </div>
+            </div>
+        </div>
+        <div class="card p-3 mb-4">
+            <h4 class="text-info">Tiempo: <span id="timestamp">-</span></h4>
+        </div>
+        <div class="row my-4">
+            <div class="col-md-6">
+                <div class="card p-3 mb-4">
+                    <canvas id="tempChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card p-3 mb-4">
+                    <canvas id="humChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
