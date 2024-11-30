@@ -90,7 +90,7 @@
                         humData.push(data.humidity);
                         timeData.push(now);
 
-                        if (timeData.length > 10) {  // Keep last 10 data points
+                        if (timeData.length > 10) {  
                             tempData.shift();
                             humData.shift();
                             timeData.shift();
@@ -102,8 +102,8 @@
                 });
             }
 
-            fetchData(); // Fetch data initially
-            setInterval(fetchData, 3000); // Fetch data every 3 seconds
+            fetchData(); // Fetch dato inicial
+            setInterval(fetchData, 3000); // Fetch dato cada 3 sg
         });
     </script>
 </head>

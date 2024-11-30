@@ -9,9 +9,9 @@ def update_data():
     humidity = data['humedad']
     
     response = {
-        'message': 'Data received and updated',
-        'temperature': temperature,
-        'humidity': humidity
+        'message': 'Data recibidos y actualizados',
+        'temperatura': temperature,
+        'humedad': humidity
     }
     
     return jsonify(response)
@@ -28,9 +28,9 @@ def db_update():
     db.session.commit()
     
     response = {
-        'message': 'Data stored in database',
-        'temperature': temperature,
-        'humidity': humidity
+        'message': 'Data guardados en la bd',
+        'temperatura': temperature,
+        'humedad': humidity
     }
     
     return jsonify(response)
@@ -46,7 +46,7 @@ def get_latest_data():
         }
         return jsonify(data)
     else:
-        return jsonify({'error': 'No data available'})
+        return jsonify({'error': 'Dato no disponible'})
 
 
 
