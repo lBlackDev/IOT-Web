@@ -1,3 +1,5 @@
+from datetime import timedelta
 class Config:
-    SQLALCHEMY_DATABASE_URI = 'mysql://usuario:calve@localhost/nombre_de_la_bd'
+    SQLALCHEMY_DATABASE_URI = 'mysql://root:2154@localhost/sensordata'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    TIMEZONE = 'America/Santiago'

@@ -6,10 +6,16 @@
     <title>Invernadero</title>
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FullCalfinar CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css" rel="stylesheet">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Moment.js with locales -->
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/min/moment-with-locales.min.js"></script>
+    <!-- FullCalfinar JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
     <style>
         body {
             background: linear-gradient(to right, #56ab2f, #a8e063); /* Fondo degradado de verde a azul */
@@ -74,7 +80,7 @@
             });
 
             function fetchData() {
-                $.get('/api/latest_data', function(data) {
+                $.get('/api/latest_data').done(function(data) {
                     if (data.error) {
                         $('#temperature').text('-');
                         $('#humidity').text('-');
@@ -82,10 +88,10 @@
                     } else {
                         $('#temperature').text(data.temperature);
                         $('#humidity').text(data.humidity);
-                        $('#timestamp').text(data.timestamp);
+                        $('#timestamp').text(moment(data.timestamp).format('LLLL')); // Formatear la fecha en español
 
                         // Update charts
-                        const now = new Date().toLocaleTimeString();
+                        const now = moment().format('LTS');
                         tempData.push(data.temperature);
                         humData.push(data.humidity);
                         timeData.push(now);
@@ -99,26 +105,157 @@
                         tempChart.update();
                         humChart.update();
                     }
+                    
+                    })
+                    .fail(function() {
+                        console.error('Error al obtener datos')
                 });
             }
-
             fetchData(); // Fetch dato inicial
-            setInterval(fetchData, 3000); // Fetch dato cada 3 sg
+            setInterval(fetchData, 3000); // Fetch dato cada 3 sg// Llama a todas las funciones al cargar la página.
+
+            
+            
+            // Inicializar el Calfinario cuando se abre el modal
+            $('#calendarioModal').on('shown.bs.modal', function () {
+                $('#calendario').fullCalendar('destroy'); // Destruir cualquier instancia previa para evitar duplicados
+                $('#calendario').fullCalendar({
+                    header: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        // right:'month,agfinaWeek,agfinaDay' no se utiliza
+                    },
+                    locale: 'es',
+                    // events: [] // Aquí puedes cargar eventos si los tienes
+                });
+            });
+
+            // Manejar la configuración del riego
+            $('#guardar_configuracion_riego').click(function() {
+                const inicio = $('#hora_inicio').val();
+                const fin = $('#hora_fin').val();
+                const dias = $('#dias').val();
+
+                // Aquí envías los datos al servidor
+                $.ajax({
+                    type: 'POST',
+                    url: '/guardar_configuracion_riego',
+                    data: JSON.stringify({ hora_inicio: inicio, hora_fin: fin, dias: dias }),
+                    contentType: 'application/json',
+                    success: function(response) {
+                        alert('Configuración de riego guardada exitosamente.');
+                    },
+                    error: function(error) {
+                        alert('Error al guardar la configuración de riego.');
+                    }
+                });
+            });
+
+
+            // estado de riego
+            function estado_de_riego() {
+                $.get('/api/estado_riego', function(data) {
+                    $('#estado_riego').text(data.estado);
+                })
+            }
+            setInterval(estado_de_riego, 3000) // estado de riego cada 3sg
+            
+            function temperatura_optima() {
+                $.get('/get/temperatura_optima', function(data) {
+                    // $('#mostrar_temperatura').text(data.temperature);
+                    const temperatura = data.temperature;
+                    const humedad = data.humidity;
+                    console.log(humedad, temperatura);
+
+                    // Mostrar temperatura optima
+                    if (temperatura >= 18 && temperatura <= 20) {
+                        $('#mostrar_temperatura').text(`Minima: ${temperatura}`)
+                    } else if (temperatura > 20 && temperatura <= 25) {
+                        $('#mostrar_temperatura').text(`Optima ${temperatura}°C`);
+                    } else {
+                        $('#mostrar_temperatura').text(`Sobrepasado ${temperatura}°C`);
+                    }
+                    if (humedad == 80) {
+                        $('#humedad_optima').text(`Humedad Optima ${humedad}%`);} // optimo 80%
+                        else if (humedad > 80)
+                        $('#humedad_optima').text(`Humedad Sobrepasada ${humedad}%`); // mayor a 80%
+                        else {
+                            $('#humedad_optima').text(`Humedad escaza ${humedad}%`); // menor a 80%
+                        }
+
+                })
+                }
+                setInterval(temperatura_optima, 3000)
+                temperatura_optima();
+                
         });
+
+
     </script>
 </head>
 <body>
     <div class="container">
+        <button id="show-calendario" class="btn btn-primary" data-toggle="modal" data-target="#calendarioModal">Mostrar Calendario</button>
+        <!-- Modal -->
+        <div class="modal fade" id="calendarioModal" tabindex="-1" role="dialog" aria-labelledby="calendarioModalLabel" aria-hidden="false">
+            <div class="modal-dialog modal-ms" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-dark" id="calendarioModalLabel">Calendario del Invernadero</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body text-dark">
+                        <div id="calendario"></div>
+                        <h5>Configurar Riego Automático</h5>
+                        <form>
+                            <div class="form-group">
+                                <label for="hora_inicio">Hora de inicio:</label>
+                                <input type="time" class="form-control" id="hora_inicio" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="hora_fin">Hora de fin:</label>
+                                <input type="time" class="form-control" id="hora_fin" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="dias">Días de Riego:</label>
+                                <select multiple class="form-control" id="dias" required>
+                                    <option value="Lun">Lunes</option>
+                                    <option value="Mar">Martes</option>
+                                    <option value="Mie">Miércoles</option>
+                                    <option value="Jue">Jueves</option>
+                                    <option value="Vier">Viernes</option>
+                                    <option value="Sab">Sábado</option>
+                                    <option value="Dom">Domingo</option>
+                                </select>
+                            </div>
+                            <button type="button" id="guardar_configuracion_riego" class="btn btn-success">Guardar Configuración</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
         <h1 class="text-center my-4 text-dark">Datos del Invernadero</h1>
         <div class="row">
+            
             <div class="col-md-6">
                 <div class="card p-3 mb-4">
-                    <h3 class="text-danger"">Temperatura: <span id="temperature">-</span> °C</h3>
+                    <h3 class="text-info">Estado de Riego : <span id="estado_riego"></span> </h3>
+                </div>
+                <div class="card p-3 mb-4">
+                    <h3 class="text-danger">Temperatura: <span id="temperature">-</span> °C</h3>
+                </div>
+                <div class="card p-3 mb-4">
+                    <h3 class="text-primary">Humedad: <span id="humidity">-</span> %</h3>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="card p-3 mb-4">
-                    <h3 class="text-primary">Humedad: <span id="humidity">-</span> %</h3>
+                    <h3 class="text-primary">Temperatura Optima: <span id="mostrar_temperatura">-</span></h3>
+                    <h3 class="text-primary">Humedad optima: <span id="humedad_optima">-</span></h3>
                 </div>
             </div>
         </div>
@@ -137,8 +274,7 @@
                 </div>
             </div>
         </div>
-    </div>
-    <!-- Bootstrap JS and dependencies -->
+    <!-- Bootstrap JS and depfinencies -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
