@@ -72,8 +72,5 @@ El proyecto **Invernadero Dashboard** es una solución IoT para monitorear en ti
 ## Contribución
 Las contribuciones son bienvenidas. Por favor, abre un issue o envía un pull request.
 
-## Licencia
-Este proyecto está licenciado bajo la Licencia MIT. Para más detalles, consulta el archivo LICENSE.
-
 ## Contacto
 Si tienes alguna pregunta o sugerencia, no dudes en contactarme en `rolando3365@gmail.com`.
